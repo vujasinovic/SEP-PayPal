@@ -1,18 +1,16 @@
 package rs.ac.ftn.uns.sep.paypal.service.implementation;
 
-import com.paypal.api.payments.Payer;
 import com.paypal.api.payments.Payment;
 import com.paypal.api.payments.Transaction;
 import com.paypal.base.rest.APIContext;
 import com.paypal.base.rest.PayPalRESTException;
-import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 import rs.ac.ftn.uns.sep.paypal.model.Seller;
 import rs.ac.ftn.uns.sep.paypal.service.PaymentService;
 import rs.ac.ftn.uns.sep.paypal.service.SellerService;
 import rs.ac.ftn.uns.sep.paypal.utils.annotation.LogPayment;
-import rs.ac.ftn.uns.sep.paypal.utils.dto.ApprovalUrlDto;
 import rs.ac.ftn.uns.sep.paypal.utils.dto.KpRequest;
+import rs.ac.ftn.uns.sep.paypal.utils.dto.PreparedPaymentDto;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -34,8 +32,8 @@ public class PaymentServiceImpl implements PaymentService {
 
     @Override
     @LogPayment
-    public ApprovalUrlDto preparePayment(KpRequest kpRequest) {
-        ApprovalUrlDto approvalUrlDto = new ApprovalUrlDto();
+    public PreparedPaymentDto preparePayment(KpRequest kpRequest) {
+        PreparedPaymentDto preparedPaymentDto = new PreparedPaymentDto();
 
         Seller seller = sellerService.findByEmail(kpRequest.getSellerEmail());
 
@@ -57,12 +55,14 @@ public class PaymentServiceImpl implements PaymentService {
         try {
             Payment createdPayment = payment.create(apiContext);
 
-            approvalUrlDto.setApprovalUrl(approvalUrl(createdPayment));
+            preparedPaymentDto.setApprovalUrl(approvalUrl(createdPayment));
+            preparedPaymentDto.setPaymentId(createdPayment.getId());
+
         } catch (PayPalRESTException e) {
             e.printStackTrace();
         }
 
-        return approvalUrlDto;
+        return preparedPaymentDto;
     }
 
 }

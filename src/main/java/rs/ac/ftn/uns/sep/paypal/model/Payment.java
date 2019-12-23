@@ -13,6 +13,8 @@ public class Payment {
     @GeneratedValue(strategy = GenerationType.AUTO)
     private Long id;
 
+    private String paymentId;
+
     @ManyToOne
     private Seller seller;
 

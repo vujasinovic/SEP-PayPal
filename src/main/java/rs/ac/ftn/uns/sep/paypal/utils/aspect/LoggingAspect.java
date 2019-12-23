@@ -1,17 +1,17 @@
 package rs.ac.ftn.uns.sep.paypal.utils.aspect;
 
 import org.aspectj.lang.JoinPoint;
-import org.aspectj.lang.annotation.After;
+import org.aspectj.lang.annotation.AfterReturning;
 import org.aspectj.lang.annotation.Aspect;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
-import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Component;
 import rs.ac.ftn.uns.sep.paypal.model.Payment;
 import rs.ac.ftn.uns.sep.paypal.model.Seller;
 import rs.ac.ftn.uns.sep.paypal.repository.PaymentRepository;
 import rs.ac.ftn.uns.sep.paypal.service.SellerService;
 import rs.ac.ftn.uns.sep.paypal.utils.dto.KpRequest;
+import rs.ac.ftn.uns.sep.paypal.utils.dto.PreparedPaymentDto;
 
 @Aspect
 @Component
@@ -27,8 +27,10 @@ public class LoggingAspect {
         this.paymentRepository = paymentRepository;
     }
 
-    @After("@annotation(rs.ac.ftn.uns.sep.paypal.utils.annotation.LogPayment))")
-    public void logAfterPreparePayment(JoinPoint joinPoint) {
+    @AfterReturning(value = "@annotation(rs.ac.ftn.uns.sep.paypal.utils.annotation.LogPayment))", returning = "preparedPaymentDto")
+    public void logAfterPreparePayment(JoinPoint joinPoint, PreparedPaymentDto preparedPaymentDto) {
+        String paymentId = preparedPaymentDto.getPaymentId();
+
         if (joinPoint.getArgs().length == 1) {
             for (Object o : joinPoint.getArgs()) {
                 if (o instanceof KpRequest) {
@@ -45,6 +47,8 @@ public class LoggingAspect {
                     payment.setAmount(kpRequest.getAmount());
                     payment.setSuccessful(false);
                     payment.setRedirectUrl(kpRequest.getRedirectUrl());
+                    payment.setPaymentId(paymentId);
+
                     LOGGER.info("Persisting payment...");
 
                     Payment persistedPayment = paymentRepository.save(payment);
