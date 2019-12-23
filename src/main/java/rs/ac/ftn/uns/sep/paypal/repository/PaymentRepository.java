@@ -6,5 +6,5 @@ import rs.ac.ftn.uns.sep.paypal.model.Payment;
 
 @Repository
 public interface PaymentRepository extends JpaRepository<Payment, Long> {
-
+    Payment findByPaymentId(String paymentId);
 }

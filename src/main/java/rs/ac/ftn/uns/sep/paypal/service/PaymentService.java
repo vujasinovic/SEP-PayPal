@@ -6,4 +6,6 @@ import rs.ac.ftn.uns.sep.paypal.utils.dto.PreparedPaymentDto;
 public interface PaymentService {
     PreparedPaymentDto preparePayment(KpRequest kpRequest);
 
+    String executePayment(String paymentId, String token, String payerId);
+
 }
