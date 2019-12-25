@@ -22,12 +22,6 @@ public class PaymentController {
         this.paymentService = paymentService;
     }
 
-    @PostMapping
-    public PreparedPaymentDto postPreparePayment(KpRequest kpRequest) {
-        LOGGER.info("Processing KP Request: " + kpRequest);
-        return paymentService.preparePayment(kpRequest);
-    }
-
     @GetMapping("/processPayment")
     public void getProcessPayment(@RequestParam String paymentId, @RequestParam String token, @RequestParam String PayerID, HttpServletResponse response) {
         LOGGER.info("Processing payment...");
@@ -42,13 +36,11 @@ public class PaymentController {
         }
     }
 
-    @GetMapping("/failedPayment")
-    public void getFailedPayment(@RequestParam String token, HttpServletResponse response) {
+    @GetMapping("/failedPayment/{id}")
+    public void getFailedPayment(@PathVariable Long id, HttpServletResponse response) throws IOException {
         LOGGER.error("Payment canceled...");
-        try {
-            response.sendRedirect("https://example.com/cancel");
-        } catch (IOException e) {
-            e.printStackTrace();
-        }
+        String redirectUrl = paymentService.cancelPayment(id);
+        response.sendRedirect(redirectUrl);
     }
+
 }

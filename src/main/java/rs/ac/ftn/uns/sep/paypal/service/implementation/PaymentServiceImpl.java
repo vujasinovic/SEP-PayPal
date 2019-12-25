@@ -13,7 +13,9 @@ import rs.ac.ftn.uns.sep.paypal.service.SellerService;
 import rs.ac.ftn.uns.sep.paypal.utils.annotation.LogPayment;
 import rs.ac.ftn.uns.sep.paypal.utils.dto.KpRequest;
 import rs.ac.ftn.uns.sep.paypal.utils.dto.PreparedPaymentDto;
+import rs.ac.uns.ftn.sep.commons.dto.*;
 
+import java.math.BigDecimal;
 import java.util.ArrayList;
 import java.util.List;
 
@@ -39,12 +41,14 @@ public class PaymentServiceImpl implements PaymentService {
 
     @Override
     @LogPayment
-    public PreparedPaymentDto preparePayment(KpRequest kpRequest) {
+    public CreatePaymentResponse preparePayment(CreatePaymentRequest kpRequest) {
         PreparedPaymentDto preparedPaymentDto = new PreparedPaymentDto();
+        rs.ac.ftn.uns.sep.paypal.model.Payment localPayment = new rs.ac.ftn.uns.sep.paypal.model.Payment();
+        localPayment = paymentRepository.save(localPayment);
 
-        Seller seller = sellerService.findByEmail(kpRequest.getSellerEmail());
+        Seller seller = sellerService.findByEmail(kpRequest.getMerchantName());
 
-        Transaction transaction = setTransaction(kpRequest.getAmount(), seller.getPaypalEmail());
+        Transaction transaction = setTransaction(BigDecimal.valueOf(kpRequest.getAmount()), seller.getPaypalEmail());
 
         List<Transaction> transactions = new ArrayList<>();
 
@@ -55,12 +59,13 @@ public class PaymentServiceImpl implements PaymentService {
         payment.setPayer(initializePayer());
         payment.setTransactions(transactions);
 
-        payment.setRedirectUrls(setRedirectUrls());
+        payment.setRedirectUrls(setRedirectUrls(localPayment.getId()));
 
         APIContext apiContext = new APIContext(clientId(), clientSecretId(), MODE);
 
+        Payment createdPayment = null;
         try {
-            Payment createdPayment = payment.create(apiContext);
+            createdPayment = payment.create(apiContext);
 
             preparedPaymentDto.setApprovalUrl(approvalUrl(createdPayment));
             preparedPaymentDto.setPaymentId(createdPayment.getId());
@@ -69,7 +74,15 @@ public class PaymentServiceImpl implements PaymentService {
             e.printStackTrace();
         }
 
-        return preparedPaymentDto;
+        localPayment.setAmount(BigDecimal.valueOf(kpRequest.getAmount()));
+        localPayment.setSeller(seller);
+        localPayment.setPaymentId(createdPayment.getId());
+        localPayment.setRedirectUrl(kpRequest.getRedirectUrl());
+        localPayment = paymentRepository.save(localPayment);
+
+
+        return CreatePaymentResponse.builder().paymentId(localPayment.getId())
+                .redirect(preparedPaymentDto.getApprovalUrl()).build();
     }
 
     @Override
@@ -111,6 +124,23 @@ public class PaymentServiceImpl implements PaymentService {
         }
 
         return persistedPayment.getRedirectUrl();
+    }
+
+    @Override
+    public PaymentStatusResponse getPaymentStatus(PaymentStatusRequest request) {
+        rs.ac.ftn.uns.sep.paypal.model.Payment payment = paymentRepository.getOne(request.getPaymentId());
+        Boolean successful = payment.getSuccessful();
+        PaymentStatus status = successful ? PaymentStatus.SUCCESS : PaymentStatus.FAIL;
+        return new PaymentStatusResponse(payment.getId(), status);
+    }
+
+    @Override
+    public String cancelPayment(Long id) {
+        rs.ac.ftn.uns.sep.paypal.model.Payment payment = paymentRepository.getOne(id);
+        payment.setSuccessful(false);
+        paymentRepository.save(payment);
+
+        return payment.getRedirectUrl();
     }
 
 }
