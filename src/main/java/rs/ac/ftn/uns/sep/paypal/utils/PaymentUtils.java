@@ -7,7 +7,8 @@ import java.math.BigDecimal;
 public final class PaymentUtils {
 
     private static final String PAYPAL = "paypal";
-    private static final String URL = "http://localhost:8080/processPayment";
+    private static final String RETURN_URL = "http://localhost:8080/processPayment";
+    private static final String CANCEL_URL = "http://localhost:8080/failedPayment";
     private static final String CURRENCY = "USD";
     private static final int APPROVAL_URL_INDEX = 1;
 
@@ -47,8 +48,8 @@ public final class PaymentUtils {
     public static RedirectUrls setRedirectUrls() {
         RedirectUrls redirectUrls = new RedirectUrls();
 
-        redirectUrls.setReturnUrl(URL);
-        redirectUrls.setCancelUrl(URL);
+        redirectUrls.setReturnUrl(RETURN_URL);
+        redirectUrls.setCancelUrl(CANCEL_URL);
 
         return redirectUrls;
     }

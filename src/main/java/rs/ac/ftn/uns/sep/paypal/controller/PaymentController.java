@@ -1,7 +1,5 @@
 package rs.ac.ftn.uns.sep.paypal.controller;
 
-import com.paypal.api.payments.Payer;
-import lombok.SneakyThrows;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.web.bind.annotation.*;
@@ -31,7 +29,7 @@ public class PaymentController {
     }
 
     @GetMapping("/processPayment")
-    public void getProcessPayment(@RequestParam(required = false) String paymentId, @RequestParam String token, @RequestParam(required = false) String PayerID, HttpServletResponse response) {
+    public void getProcessPayment(@RequestParam String paymentId, @RequestParam String token, @RequestParam String PayerID, HttpServletResponse response) {
         LOGGER.info("Processing payment...");
         LOGGER.info(String.format("Payment ID: %s, Token: %s, PayerID: %s", paymentId, token, PayerID));
 
@@ -39,6 +37,16 @@ public class PaymentController {
 
         try {
             response.sendRedirect(redirectUrl);
+        } catch (IOException e) {
+            e.printStackTrace();
+        }
+    }
+
+    @GetMapping("/failedPayment")
+    public void getFailedPayment(@RequestParam String token, HttpServletResponse response) {
+        LOGGER.error("Payment canceled...");
+        try {
+            response.sendRedirect("https://example.com/cancel");
         } catch (IOException e) {
             e.printStackTrace();
         }
