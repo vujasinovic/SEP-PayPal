@@ -6,7 +6,7 @@ import java.math.BigDecimal;
 
 public final class PaymentUtils {
 
-    private static final String PAYPAL = "paypal";
+    private static final String PAYMENT_METHOD = "paypal";
     private static final String RETURN_URL = "http://localhost/paypal/processPayment";
     private static final String CANCEL_URL = "http://localhost/paypal/failedPayment/";
     private static final String CURRENCY = "USD";
@@ -29,7 +29,7 @@ public final class PaymentUtils {
      * @param email - email of paypal account
      * @return created payee object
      */
-    public static Payee setPayee(String email) {
+    private static Payee setPayee(String email) {
         Payee payee = new Payee();
 
         payee.setEmail(email);
@@ -40,7 +40,7 @@ public final class PaymentUtils {
     public static Payer initializePayer() {
         Payer payer = new Payer();
 
-        payer.setPaymentMethod(PAYPAL);
+        payer.setPaymentMethod(PAYMENT_METHOD);
 
         return payer;
     }

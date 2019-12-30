@@ -5,8 +5,6 @@ import org.slf4j.LoggerFactory;
 import org.springframework.web.bind.annotation.*;
 import rs.ac.ftn.uns.sep.paypal.service.PaymentService;
 import rs.ac.ftn.uns.sep.paypal.service.implementation.PaymentServiceImpl;
-import rs.ac.ftn.uns.sep.paypal.utils.dto.KpRequest;
-import rs.ac.ftn.uns.sep.paypal.utils.dto.PreparedPaymentDto;
 
 import javax.servlet.http.HttpServletResponse;
 import java.io.IOException;
@@ -23,23 +21,19 @@ public class PaymentController {
     }
 
     @GetMapping("/processPayment")
-    public void getProcessPayment(@RequestParam String paymentId, @RequestParam String token, @RequestParam String PayerID, HttpServletResponse response) {
-        LOGGER.info("Processing payment...");
+    public void getProcessPayment(@RequestParam String paymentId, @RequestParam String token, @RequestParam String PayerID, HttpServletResponse response) throws IOException {
         LOGGER.info(String.format("Payment ID: %s, Token: %s, PayerID: %s", paymentId, token, PayerID));
 
         String redirectUrl = paymentService.executePayment(paymentId, token, PayerID);
 
-        try {
-            response.sendRedirect(redirectUrl);
-        } catch (IOException e) {
-            e.printStackTrace();
-        }
+        response.sendRedirect(redirectUrl);
     }
 
     @GetMapping("/failedPayment/{id}")
     public void getFailedPayment(@PathVariable Long id, HttpServletResponse response) throws IOException {
-        LOGGER.error("Payment canceled...");
         String redirectUrl = paymentService.cancelPayment(id);
+
+        LOGGER.error("Payment canceled. Redirecting to: " + redirectUrl);
         response.sendRedirect(redirectUrl);
     }
 

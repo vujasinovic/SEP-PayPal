@@ -8,8 +8,11 @@ import rs.ac.ftn.uns.sep.paypal.service.SellerService;
 
 @Service
 public class SellerServiceImpl implements SellerService {
-    @Autowired
-    private SellerRepository sellerRepository;
+    private final SellerRepository sellerRepository;
+
+    public SellerServiceImpl(SellerRepository sellerRepository) {
+        this.sellerRepository = sellerRepository;
+    }
 
     @Override
     public Seller findByEmail(String sellerEmail) {

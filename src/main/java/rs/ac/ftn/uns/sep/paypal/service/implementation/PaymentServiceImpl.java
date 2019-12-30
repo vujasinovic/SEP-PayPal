@@ -11,7 +11,6 @@ import rs.ac.ftn.uns.sep.paypal.repository.PaymentRepository;
 import rs.ac.ftn.uns.sep.paypal.service.PaymentService;
 import rs.ac.ftn.uns.sep.paypal.service.SellerService;
 import rs.ac.ftn.uns.sep.paypal.utils.annotation.LogPayment;
-import rs.ac.ftn.uns.sep.paypal.utils.dto.KpRequest;
 import rs.ac.ftn.uns.sep.paypal.utils.dto.PreparedPaymentDto;
 import rs.ac.uns.ftn.sep.commons.dto.*;
 
@@ -43,7 +42,9 @@ public class PaymentServiceImpl implements PaymentService {
     @LogPayment
     public CreatePaymentResponse preparePayment(CreatePaymentRequest kpRequest) {
         PreparedPaymentDto preparedPaymentDto = new PreparedPaymentDto();
+
         rs.ac.ftn.uns.sep.paypal.model.Payment localPayment = new rs.ac.ftn.uns.sep.paypal.model.Payment();
+
         localPayment = paymentRepository.save(localPayment);
 
         Seller seller = sellerService.findByEmail(kpRequest.getMerchantName());
@@ -129,15 +130,18 @@ public class PaymentServiceImpl implements PaymentService {
     @Override
     public PaymentStatusResponse getPaymentStatus(PaymentStatusRequest request) {
         rs.ac.ftn.uns.sep.paypal.model.Payment payment = paymentRepository.getOne(request.getPaymentId());
-        Boolean successful = payment.getSuccessful();
-        PaymentStatus status = successful ? PaymentStatus.SUCCESS : PaymentStatus.FAIL;
+
+        PaymentStatus status = payment.getSuccessful() ? PaymentStatus.SUCCESS : PaymentStatus.FAIL;
+
         return new PaymentStatusResponse(payment.getId(), status);
     }
 
     @Override
     public String cancelPayment(Long id) {
         rs.ac.ftn.uns.sep.paypal.model.Payment payment = paymentRepository.getOne(id);
+
         payment.setSuccessful(false);
+
         paymentRepository.save(payment);
 
         return payment.getRedirectUrl();
