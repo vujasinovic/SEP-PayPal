@@ -183,6 +183,7 @@ public class PaymentServiceImpl implements PaymentService {
         Currency amount = currency(request.getAmount());
 
         paymentDefinition.setChargeModels(List.of(chargeModel(amount)));
+        paymentDefinition.setAmount(amount);
 
         List<PaymentDefinition> paymentDefinitions = new ArrayList<>();
         paymentDefinitions.add(paymentDefinition);
