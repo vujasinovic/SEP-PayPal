@@ -1,5 +1,6 @@
 package rs.ac.ftn.uns.sep.paypal.service;
 
+import rs.ac.ftn.uns.sep.paypal.utils.dto.SubscriptionRequest;
 import rs.ac.uns.ftn.sep.commons.dto.CreatePaymentRequest;
 import rs.ac.uns.ftn.sep.commons.dto.CreatePaymentResponse;
 import rs.ac.uns.ftn.sep.commons.dto.PaymentStatusRequest;
@@ -14,4 +15,5 @@ public interface PaymentService {
 
     String cancelPayment(Long id);
 
+    CreatePaymentResponse prepareSubscription(SubscriptionRequest subscriptionRequest);
 }

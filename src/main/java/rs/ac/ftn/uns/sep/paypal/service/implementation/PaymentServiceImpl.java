@@ -12,15 +12,20 @@ import rs.ac.ftn.uns.sep.paypal.service.PaymentService;
 import rs.ac.ftn.uns.sep.paypal.service.SellerService;
 import rs.ac.ftn.uns.sep.paypal.utils.annotation.LogPayment;
 import rs.ac.ftn.uns.sep.paypal.utils.dto.PreparedPaymentDto;
+import rs.ac.ftn.uns.sep.paypal.utils.dto.SubscriptionRequest;
 import rs.ac.uns.ftn.sep.commons.dto.*;
 
 import java.math.BigDecimal;
 import java.util.ArrayList;
+import java.util.Collections;
 import java.util.List;
 
+import static rs.ac.ftn.uns.sep.paypal.constants.Constants.Patch.ACTIVE;
+import static rs.ac.ftn.uns.sep.paypal.constants.Constants.Patch.STATE;
 import static rs.ac.ftn.uns.sep.paypal.utils.PaymentUtils.*;
 import static rs.ac.ftn.uns.sep.paypal.utils.SandboxCredentialsUtils.clientId;
 import static rs.ac.ftn.uns.sep.paypal.utils.SandboxCredentialsUtils.clientSecretId;
+import static rs.ac.ftn.uns.sep.paypal.utils.SubscriptionUtils.*;
 
 @Service
 public class PaymentServiceImpl implements PaymentService {
@@ -121,7 +126,7 @@ public class PaymentServiceImpl implements PaymentService {
             LOGGER.info("Executed payment - Response: \n" + Payment.getLastResponse());
 
         } catch (PayPalRESTException e) {
-            e.printStackTrace();
+            LOGGER.error("Error happened while executing payment.", e);
         }
 
         return persistedPayment.getRedirectUrl();
@@ -139,12 +144,53 @@ public class PaymentServiceImpl implements PaymentService {
     @Override
     public String cancelPayment(Long id) {
         rs.ac.ftn.uns.sep.paypal.model.Payment payment = paymentRepository.getOne(id);
-
         payment.setSuccessful(false);
 
         paymentRepository.save(payment);
 
         return payment.getRedirectUrl();
+    }
+
+    @Override
+    public CreatePaymentResponse prepareSubscription(SubscriptionRequest request) {
+        APIContext apiContext = new APIContext(clientId(), clientSecretId(), MODE);
+
+        Plan plan = createPlan(request);
+
+        try {
+            Plan createdPlan = plan.create(apiContext);
+
+            List<Patch> patches = new ArrayList<>();
+
+            patches.add(patch(Collections.singletonMap(STATE, ACTIVE)));
+
+            createdPlan.update(apiContext, patches);
+            LOGGER.info("Plan state: {}", createdPlan.getState());
+            LOGGER.info("Created plan id: {}", createdPlan.getId());
+        } catch (PayPalRESTException e) {
+            LOGGER.error("Could not update billing plan. ", e);
+        }
+
+        return new CreatePaymentResponse();
+    }
+
+    private Plan createPlan(SubscriptionRequest request) {
+        Plan plan = plan(request.getSubject());
+
+        PaymentDefinition paymentDefinition = paymentDefinition(request.getFrequency(),
+                request.getInterval(), String.valueOf(request.getCycles()));
+
+        Currency amount = currency(request.getAmount());
+
+        paymentDefinition.setChargeModels(List.of(chargeModel(amount)));
+
+        List<PaymentDefinition> paymentDefinitions = new ArrayList<>();
+        paymentDefinitions.add(paymentDefinition);
+
+        plan.setPaymentDefinitions(paymentDefinitions);
+        plan.setMerchantPreferences(merchantPreferences(amount));
+
+        return plan;
     }
 
 }

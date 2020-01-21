@@ -1,20 +1,19 @@
 package rs.ac.ftn.uns.sep.paypal.utils;
 
 import com.paypal.api.payments.*;
+import lombok.AccessLevel;
+import lombok.NoArgsConstructor;
 
 import java.math.BigDecimal;
 
+import static rs.ac.ftn.uns.sep.paypal.constants.Constants.ApprovalUrl.APPROVAL_URL_INDEX;
+import static rs.ac.ftn.uns.sep.paypal.constants.Constants.Paypal.CURRENCY;
+import static rs.ac.ftn.uns.sep.paypal.constants.Constants.Paypal.PAYMENT_METHOD;
+import static rs.ac.ftn.uns.sep.paypal.constants.Constants.Url.CANCEL_URL;
+import static rs.ac.ftn.uns.sep.paypal.constants.Constants.Url.RETURN_URL;
+
+@NoArgsConstructor(access = AccessLevel.PRIVATE)
 public final class PaymentUtils {
-
-    private static final String PAYMENT_METHOD = "paypal";
-    private static final String RETURN_URL = "http://localhost/paypal/processPayment";
-    private static final String CANCEL_URL = "http://localhost/paypal/failedPayment/";
-    private static final String CURRENCY = "USD";
-    private static final int APPROVAL_URL_INDEX = 1;
-
-    private PaymentUtils() {
-
-    }
 
     public static Amount setAmount(BigDecimal total) {
         Amount amount = new Amount();
