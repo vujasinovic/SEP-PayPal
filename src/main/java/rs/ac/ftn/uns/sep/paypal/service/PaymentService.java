@@ -16,4 +16,6 @@ public interface PaymentService {
     String cancelPayment(Long id);
 
     CreatePaymentResponse prepareSubscription(SubscriptionRequest subscriptionRequest);
+
+    void executeSubscription(String token);
 }

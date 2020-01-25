@@ -1,10 +1,19 @@
 package rs.ac.ftn.uns.sep.paypal.constants;
 
 public interface Constants {
+    interface UrlDev {
+        String HOST = "http://localhost:8080";
+        String RETURN_URL = HOST + "/processPayment";
+        String CANCEL_URL = HOST + "/failedPayment/";
+        String SUBSCRIPTION_URL = HOST + "/subscription";
+    }
+
     interface Url {
         String HOST = "http://localhost/paypal";
         String RETURN_URL = HOST + "/processPayment";
         String CANCEL_URL = HOST + "/failedPayment/";
+        String SUBSCRIPTION_URL = HOST + "/subscription";
+        String APPROVAL_URL = "approval_url";
     }
 
     interface Paypal {

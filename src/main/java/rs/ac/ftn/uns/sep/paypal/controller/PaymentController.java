@@ -37,4 +37,11 @@ public class PaymentController {
         response.sendRedirect(redirectUrl);
     }
 
+    @GetMapping("/subscription")
+    public void getProcessPayment(@RequestParam String token) {
+        LOGGER.info(String.format("Agreement token: %s", token));
+        LOGGER.info("Executing payment...");
+        paymentService.executeSubscription(token);
+    }
+
 }

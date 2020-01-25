@@ -15,17 +15,17 @@ import static rs.ac.ftn.uns.sep.paypal.constants.Constants.PaymentDefinition.NAM
 import static rs.ac.ftn.uns.sep.paypal.constants.Constants.PaymentDefinition.TYPE;
 import static rs.ac.ftn.uns.sep.paypal.constants.Constants.Paypal.CURRENCY;
 import static rs.ac.ftn.uns.sep.paypal.constants.Constants.Plan.PLAN_TYPE;
-import static rs.ac.ftn.uns.sep.paypal.constants.Constants.Url.CANCEL_URL;
-import static rs.ac.ftn.uns.sep.paypal.constants.Constants.Url.RETURN_URL;
+import static rs.ac.ftn.uns.sep.paypal.constants.Constants.UrlDev.CANCEL_URL;
+import static rs.ac.ftn.uns.sep.paypal.constants.Constants.UrlDev.SUBSCRIPTION_URL;
 
 @NoArgsConstructor(access = AccessLevel.PRIVATE)
 public final class SubscriptionUtils {
 
-    public static Plan plan(String planName) {
+    static Plan plan(String planName) {
         return new Plan(planName, "Template creation.", PLAN_TYPE);
     }
 
-    public static PaymentDefinition paymentDefinition(String frequency, String interval, String cycles) {
+    static PaymentDefinition paymentDefinition(String frequency, String interval, String cycles) {
         PaymentDefinition paymentDefinition = new PaymentDefinition();
         paymentDefinition.setName(NAME);
         paymentDefinition.setType(TYPE);
@@ -36,20 +36,20 @@ public final class SubscriptionUtils {
         return paymentDefinition;
     }
 
-    public static Currency currency(BigDecimal amount) {
+    static Currency currency(BigDecimal amount) {
         return new Currency(CURRENCY, String.valueOf(amount));
     }
 
-    public static ChargeModels chargeModel(Currency amount) {
+    static ChargeModels chargeModel(Currency amount) {
         return new ChargeModels(CHARGE_MODEL_TYPE, amount);
     }
 
-    public static MerchantPreferences merchantPreferences(Currency currency) {
+    static MerchantPreferences merchantPreferences(Currency currency) {
         MerchantPreferences merchantPreferences = new MerchantPreferences();
 
         merchantPreferences.setSetupFee(currency);
         merchantPreferences.setCancelUrl(CANCEL_URL);
-        merchantPreferences.setReturnUrl(RETURN_URL);
+        merchantPreferences.setReturnUrl(SUBSCRIPTION_URL);
         merchantPreferences.setMaxFailAttempts(MAXIMUM_FAIL_ATTEMPTS);
         merchantPreferences.setAutoBillAmount(AUTOMATIC_BILL);
         merchantPreferences.setInitialFailAmountAction(FAIL_ACTION);
