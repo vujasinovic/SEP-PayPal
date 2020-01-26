@@ -1,7 +1,7 @@
 package rs.ac.ftn.uns.sep.paypal.model;
 
 import lombok.Data;
-import rs.ac.ftn.uns.sep.paypal.utils.SubscriptionStatus;
+import rs.ac.ftn.uns.sep.paypal.utils.enumeration.SubscriptionStatus;
 
 import javax.persistence.*;
 import javax.validation.constraints.Digits;
