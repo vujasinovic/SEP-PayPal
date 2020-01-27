@@ -2,6 +2,7 @@ package rs.ac.ftn.uns.sep.paypal.controller;
 
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+import org.springframework.scheduling.annotation.Scheduled;
 import org.springframework.web.bind.annotation.*;
 import rs.ac.ftn.uns.sep.paypal.service.PaymentService;
 import rs.ac.ftn.uns.sep.paypal.service.implementation.PaymentServiceImpl;
@@ -13,6 +14,8 @@ import java.io.IOException;
 @RequestMapping("/")
 public class PaymentController {
     private final Logger LOGGER = LoggerFactory.getLogger(PaymentController.class);
+
+    private static final String EVERY_30_SECONDS = "0/30 * * * * ?";
 
     private final PaymentService paymentService;
 
@@ -42,6 +45,11 @@ public class PaymentController {
         LOGGER.info(String.format("Agreement token: %s", token));
         LOGGER.info("Executing payment...");
         paymentService.executeSubscription(token);
+    }
+
+    @Scheduled(cron = EVERY_30_SECONDS)
+    public void changeStatus() {
+        paymentService.checkStatus();
     }
 
 }

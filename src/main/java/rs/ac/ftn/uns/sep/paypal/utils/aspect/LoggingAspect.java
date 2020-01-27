@@ -13,6 +13,8 @@ import rs.ac.ftn.uns.sep.paypal.service.SellerService;
 import rs.ac.ftn.uns.sep.paypal.utils.dto.KpRequest;
 import rs.ac.ftn.uns.sep.paypal.utils.dto.PreparedPaymentDto;
 
+import static rs.ac.ftn.uns.sep.paypal.constants.PaymentStatus.CREATED;
+
 @Aspect
 @Component
 public class LoggingAspect {
@@ -45,7 +47,7 @@ public class LoggingAspect {
 
                     payment.setSeller(seller);
                     payment.setAmount(kpRequest.getAmount());
-                    payment.setSuccessful(false);
+                    payment.setStatus(CREATED);
                     payment.setRedirectUrl(kpRequest.getRedirectUrl());
                     payment.setPaymentId(paymentId);
 

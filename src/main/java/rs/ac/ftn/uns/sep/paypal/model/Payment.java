@@ -1,10 +1,12 @@
 package rs.ac.ftn.uns.sep.paypal.model;
 
 import lombok.Data;
+import org.hibernate.annotations.CreationTimestamp;
 
 import javax.persistence.*;
 import javax.validation.constraints.Digits;
 import java.math.BigDecimal;
+import java.time.LocalDateTime;
 
 @Entity
 @Data
@@ -23,5 +25,8 @@ public class Payment {
 
     private String redirectUrl;
 
-    private Boolean successful;
+    private String status;
+
+    @CreationTimestamp
+    private LocalDateTime createdOn;
 }

@@ -15,11 +15,11 @@ import rs.ac.ftn.uns.sep.paypal.service.PaymentService;
 import rs.ac.ftn.uns.sep.paypal.service.SellerService;
 import rs.ac.ftn.uns.sep.paypal.service.SubscriptionService;
 import rs.ac.ftn.uns.sep.paypal.utils.PaymentUtils;
-import rs.ac.ftn.uns.sep.paypal.utils.enumeration.SubscriptionStatus;
 import rs.ac.ftn.uns.sep.paypal.utils.UrlUtils;
 import rs.ac.ftn.uns.sep.paypal.utils.annotation.LogPayment;
 import rs.ac.ftn.uns.sep.paypal.utils.dto.PreparedPaymentDto;
 import rs.ac.ftn.uns.sep.paypal.utils.dto.SubscriptionRequest;
+import rs.ac.ftn.uns.sep.paypal.utils.enumeration.SubscriptionStatus;
 import rs.ac.uns.ftn.sep.commons.dto.*;
 
 import java.io.UnsupportedEncodingException;
@@ -33,6 +33,7 @@ import java.util.List;
 import static java.util.Objects.requireNonNull;
 import static rs.ac.ftn.uns.sep.paypal.constants.Constants.Patch.ACTIVE;
 import static rs.ac.ftn.uns.sep.paypal.constants.Constants.Patch.STATE;
+import static rs.ac.ftn.uns.sep.paypal.constants.PaymentStatus.*;
 import static rs.ac.ftn.uns.sep.paypal.utils.PaymentUtils.*;
 import static rs.ac.ftn.uns.sep.paypal.utils.SandboxCredentialsUtils.clientId;
 import static rs.ac.ftn.uns.sep.paypal.utils.SandboxCredentialsUtils.clientSecretId;
@@ -60,6 +61,7 @@ public class PaymentServiceImpl implements PaymentService {
         PreparedPaymentDto preparedPaymentDto = new PreparedPaymentDto();
 
         rs.ac.ftn.uns.sep.paypal.model.Payment localPayment = new rs.ac.ftn.uns.sep.paypal.model.Payment();
+        localPayment.setStatus(CREATED);
 
         localPayment = paymentRepository.save(localPayment);
 
@@ -118,7 +120,7 @@ public class PaymentServiceImpl implements PaymentService {
 
         LOGGER.info("Capture id=" + responseCapture.getId() + " and status=" + responseCapture.getState());
 
-        persistedPayment.setSuccessful(true);
+        persistedPayment.setStatus(SUCCESS);
         paymentRepository.save(persistedPayment);
 
         LOGGER.info("Executed payment - Request: \n" + Payment.getLastRequest());
@@ -131,7 +133,7 @@ public class PaymentServiceImpl implements PaymentService {
     public PaymentStatusResponse getPaymentStatus(PaymentStatusRequest request) {
         rs.ac.ftn.uns.sep.paypal.model.Payment payment = paymentRepository.getOne(request.getPaymentId());
 
-        PaymentStatus status = payment.getSuccessful() ? PaymentStatus.SUCCESS : PaymentStatus.FAIL;
+        PaymentStatus status = payment.getStatus().equalsIgnoreCase(SUCCESS) ? PaymentStatus.SUCCESS : PaymentStatus.FAIL;
 
         return new PaymentStatusResponse(payment.getId(), status);
     }
@@ -139,7 +141,7 @@ public class PaymentServiceImpl implements PaymentService {
     @Override
     public String cancelPayment(Long id) {
         rs.ac.ftn.uns.sep.paypal.model.Payment payment = paymentRepository.getOne(id);
-        payment.setSuccessful(false);
+        payment.setStatus(FAILED);
 
         paymentRepository.save(payment);
 
@@ -195,6 +197,28 @@ public class PaymentServiceImpl implements PaymentService {
         Agreement activatedAgreement = Agreement.execute(API_CONTEXT, token);
 
         LOGGER.info("Agreement created with ID: {} and was successfully executed.", activatedAgreement.getId());
+    }
+
+    @SneakyThrows
+    @Override
+    public void checkStatus() {
+        List<rs.ac.ftn.uns.sep.paypal.model.Payment> notCompletedPayments = paymentRepository.findAllByStatusNotCompleted();
+
+        for (rs.ac.ftn.uns.sep.paypal.model.Payment localPayment : notCompletedPayments) {
+            Payment payment = Payment.get(API_CONTEXT, localPayment.getPaymentId());
+
+            String state = payment.getState().toUpperCase();
+
+            if (state.equalsIgnoreCase(CREATED)) {
+                LOGGER.info(String.format("Status of payment with id %s set to: %s", payment.getId(), FAILED));
+                changeStatus(localPayment, FAILED);
+            }
+        }
+    }
+
+    private void changeStatus(rs.ac.ftn.uns.sep.paypal.model.Payment payment, String status) {
+        payment.setStatus(status.toUpperCase());
+        paymentRepository.save(payment);
     }
 
     private Subscription createSubscription(SubscriptionRequest request, String planId, Seller seller) {

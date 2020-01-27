@@ -18,4 +18,6 @@ public interface PaymentService {
     CreatePaymentResponse prepareSubscription(SubscriptionRequest subscriptionRequest);
 
     void executeSubscription(String token);
+
+    void checkStatus();
 }
